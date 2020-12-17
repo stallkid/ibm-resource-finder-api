@@ -2,7 +2,6 @@ package service
 
 import (
 	"encoding/json"
-	"fmt"
 	"ibm-resource-finder-api/domain"
 	"io/ioutil"
 	"log"
@@ -68,7 +67,6 @@ func GetManagerResourcesData(dn string) domain.Resource {
 
 func GetResourceDetailsByUid(uid string) domain.ResourceSkills {
 	// Request to IBM webservice
-	fmt.Println(upUrl + uid + "/profile_extended")
 	resp, err := http.Get(upUrl + uid + "/profile_extended")
 	if err != nil {
 		log.Fatalln(err)
@@ -84,4 +82,26 @@ func GetResourceDetailsByUid(uid string) domain.ResourceSkills {
 	json.Unmarshal(body, &resource)
 	// Return Domain Struct
 	return resource
+}
+
+func GetResourceByManagerDnWithDetails(dn string) domain.Resource {
+	var newManagerResource domain.Resource
+	managerResource := GetManagerResourcesData(dn)
+	for _, entry := range managerResource.Search.Entry {
+		var skills domain.Skills
+		for _, attribute := range entry.Attribute {
+			if attribute.Name == "uid" {
+				var detail domain.ResourceSkills
+				detail = GetResourceDetailsByUid(attribute.Value[0])
+				skills.Name = "badges"
+				for _, badges := range detail.Content.Certifications.Badges {
+					skills.Value = append(skills.Value, string(badges.BadgeName))
+				}
+			}
+		}
+		entry.Attribute = append(entry.Attribute, skills)
+		newManagerResource.Search.Entry = append(newManagerResource.Search.Entry, entry)
+	}
+	managerResource.Search.Entry = newManagerResource.Search.Entry
+	return managerResource
 }

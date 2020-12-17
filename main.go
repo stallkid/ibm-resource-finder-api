@@ -14,7 +14,8 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/resource/{email}", controller.GetResourceByW3id).Methods("GET")
 	router.HandleFunc("/manager/resource/{dn}", controller.GetResourceByManagerDn).Methods("GET")
-	router.HandleFunc("/resource/details/{uid}", controller.GetResourceDetails).Methods("GET")
+	router.HandleFunc("/resource/details/{uid}", controller.GetResourceSkills).Methods("GET")
+	router.HandleFunc("/manager/resource/details/{dn}", controller.GetResourceByManagerDnWithDetails).Methods("GET")
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
 
